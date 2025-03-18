@@ -29,12 +29,6 @@ class CreateShortURLView(APIView):
 
         original_url = create_serializer.validated_data['original_url']
 
-        if len(original_url) > 2048:
-            return Response({
-                'success': False,
-                'reason': 'URL too long'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
         short_url = ShortURL.objects.create(
             original_url=original_url,
             short_code=self.generate_short_code()
