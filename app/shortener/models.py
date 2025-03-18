@@ -9,6 +9,12 @@ class ShortURL(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     expiration_date = models.DateTimeField()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['short_code']),
+            models.Index(fields=['expiration_date'])
+        ]
+
     def save(self, *args, **kwargs):
         if not self.expiration_date:
             self.expiration_date = timezone.now() + timedelta(days=30)
