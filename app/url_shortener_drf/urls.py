@@ -19,5 +19,5 @@ from django.urls import path
 from shortener.views import CreateShortURLView
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/shorten/', CreateShortURLView.as_view(), name='create_short_url'),
+    path('api/v1/shorten/', CreateShortURLView.as_view(), name='create_short_url'),
 ]
