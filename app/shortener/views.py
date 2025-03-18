@@ -92,6 +92,44 @@ class CreateShortURLView(APIView):
 
 
 class RedirectShortURLView(APIView):
+    @swagger_auto_schema(
+        operation_description="Redirect to original URL using short code",
+        manual_parameters=[
+            openapi.Parameter(
+                'short_code',
+                openapi.IN_PATH,
+                description='Short code of the URL',
+                type=openapi.TYPE_STRING,
+                required=True,
+                example='abc123'
+            )
+        ],
+        responses={
+            200: openapi.Response(
+                description="Redirect to original URL",
+            ),
+            404: openapi.Response(
+                description="Short URL not found",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'success': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=False),
+                        'reason': openapi.Schema(type=openapi.TYPE_STRING, example="Invalid short URL")
+                    }
+                )
+            ),
+            410: openapi.Response(
+                description="URL has expired",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'success': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=False),
+                        'reason': openapi.Schema(type=openapi.TYPE_STRING, example="URL has expired")
+                    }
+                )
+            )
+        }
+    )
     def get(self, request, short_code):
         try:
             short_url = ShortURL.objects.get(short_code=short_code)
