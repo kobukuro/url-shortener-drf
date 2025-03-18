@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from shortener.views import CreateShortURLView
+from shortener.views import CreateShortURLView, RedirectShortURLView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/shorten/', CreateShortURLView.as_view(), name='create_short_url'),
+    path('s/<str:short_code>/', RedirectShortURLView.as_view(), name='redirect_short_url'),
 ]
