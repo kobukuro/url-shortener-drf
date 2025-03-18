@@ -10,6 +10,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from django.db import transaction
 
 
 class CreateShortURLView(APIView):
@@ -47,12 +48,12 @@ class CreateShortURLView(APIView):
                         'expiration_date': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
                         'success': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=True),
                         'reason': openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        nullable=True,
-                        default=None,
-                        example=None,
-                        description='Always null when successful'
-                    )
+                            type=openapi.TYPE_STRING,
+                            nullable=True,
+                            default=None,
+                            example=None,
+                            description='Always null when successful'
+                        )
                     }
                 )
             ),
@@ -68,6 +69,7 @@ class CreateShortURLView(APIView):
             )
         }
     )
+    @transaction.atomic
     def post(self, request):
         """
             Create a short URL
@@ -79,16 +81,21 @@ class CreateShortURLView(APIView):
                 'success': False,
                 'reason': create_serializer.errors.get('original_url', ['Invalid URL format'])[0]
             }, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            with transaction.atomic():
+                original_url = create_serializer.validated_data['original_url']
 
-        original_url = create_serializer.validated_data['original_url']
-
-        short_url = ShortURL.objects.create(
-            original_url=original_url,
-            short_code=self.generate_short_code()
-        )
-
-        serializer = ShortURLSerializer(short_url, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                short_url = ShortURL.objects.create(
+                    original_url=original_url,
+                    short_code=self.generate_short_code()
+                )
+                serializer = ShortURLSerializer(short_url, context={'request': request})
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({
+                'success': False,
+                'reason': f"Failed to create short URL: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class RedirectShortURLView(APIView):
