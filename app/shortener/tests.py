@@ -5,11 +5,12 @@ from rest_framework.test import APITestCase
 from shortener.models import ShortURL
 from django.utils import timezone
 from datetime import timedelta
-
+from django.core.cache import cache
 
 class CreateShortURLViewTests(APITestCase):
     def setUp(self):
         """Set up test data for URL shortening tests"""
+        cache.clear()  # Clear the rate limit cache
         self.url = reverse('create_short_url')
         self.valid_payload = {
             'original_url': 'https://www.youtube.com/'
@@ -17,6 +18,10 @@ class CreateShortURLViewTests(APITestCase):
         self.invalid_payload = {
             'original_url': 'not-a-valid-url'
         }
+
+    def tearDown(self):
+        """Clean up after each test"""
+        cache.clear()  # Clear the rate limit cache
 
     def test_create_valid_short_url(self):
         """Test creating a valid short URL"""
@@ -35,17 +40,18 @@ class CreateShortURLViewTests(APITestCase):
         self.assertFalse(response.data['success'])
         self.assertTrue('reason' in response.data)
 
-    # def test_rate_limiting(self):
-    #     """Test rate limiting functionality"""
-    #     for _ in range(110):
-    #         response = self.client.post(self.url, self.valid_payload, format='json')
-    #
-    #     self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+    def test_rate_limiting(self):
+        """Test rate limiting functionality"""
+        for _ in range(110):
+            response = self.client.post(self.url, self.valid_payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
 
 
 class RedirectShortURLViewTests(APITestCase):
     def setUp(self):
         """Set up test data for URL redirection tests"""
+        cache.clear()  # Clear the rate limit cache
         # Create a valid short URL
         self.short_url = ShortURL.objects.create(
             original_url='https://www.youtube.com/',
@@ -59,6 +65,10 @@ class RedirectShortURLViewTests(APITestCase):
             short_code='def456',
             expiration_date=timezone.now() - timedelta(days=1)
         )
+
+    def tearDown(self):
+        """Clean up after each test"""
+        cache.clear()  # Clear the rate limit cache
 
     def test_valid_redirect(self):
         """Test redirection for a valid short URL"""
@@ -88,6 +98,14 @@ class RedirectShortURLViewTests(APITestCase):
 
 
 class ShortURLModelTests(TestCase):
+    def setUp(self):
+        """Set up test data"""
+        cache.clear()  # Clear the rate limit cache
+
+    def tearDown(self):
+        """Clean up after each test"""
+        cache.clear()  # Clear the rate limit cache
+
     def test_short_code_generation(self):
         """Test uniqueness of generated short codes"""
         url1 = ShortURL.objects.create(
