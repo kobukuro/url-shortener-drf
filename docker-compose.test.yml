@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    command: >
+      sh -c "
+        python manage.py wait_for_db &&
+        python manage.py migrate &&
+        pytest --cov=. --cov-report=xml
+      "
+    environment:
+      - SECRET_KEY=testsecretkey
+      - DEBUG=1
+      - DB_HOST=db
+      - DB_NAME=testdb
+      - DB_USER=testuser
+      - DB_PASS=testpass
+      - DJANGO_SETTINGS_MODULE=url_shortener_drf.settings
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=testdb
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=testpass
