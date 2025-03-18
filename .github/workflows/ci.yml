@@ -44,5 +44,7 @@ jobs:
         DB_NAME: devdb
         DB_USER: devuser
         DB_PASS: changeme
+        PYTHONPATH: ${{ github.workspace }}/app
       run: |
-        pytest
+        cd app
+        python -m pytest
