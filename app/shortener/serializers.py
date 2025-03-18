@@ -8,8 +8,10 @@ from .models import ShortURL
 class CreateShortURLSerializer(serializers.Serializer):
     original_url = serializers.CharField(
         max_length=2048,
+        required=True,
         error_messages={
-            'max_length': 'Ensure original_url field has no more than 2048 characters.'
+            'max_length': 'Ensure original_url field has no more than 2048 characters.',
+            'required': 'The original_url field is required.'
         }
     )
 
