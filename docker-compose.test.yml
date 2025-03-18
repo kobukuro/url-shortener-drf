@@ -18,9 +18,13 @@ services:
       - DB_NAME=testdb
       - DB_USER=testuser
       - DB_PASS=testpass
+      - DB_PORT=5432
       - DJANGO_SETTINGS_MODULE=url_shortener_drf.settings
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -32,3 +36,24 @@ services:
       - POSTGRES_DB=testdb
       - POSTGRES_USER=testuser
       - POSTGRES_PASSWORD=testpass
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d testdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  postgres_test_data:
