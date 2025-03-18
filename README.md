@@ -10,8 +10,8 @@ docker compose up -d
 ## once updating models, apply changes to database
 
 ```
-docker-compose -f .\docker-compose.yml run --rm app sh -c "python manage.py makemigrations"
-docker-compose -f .\docker-compose.yml run --rm app sh -c "python manage.py migrate"
+docker compose -f .\docker-compose.yml run --rm app sh -c "python manage.py makemigrations"
+docker compose -f .\docker-compose.yml run --rm app sh -c "python manage.py migrate"
 ```
 
 ## How to start the container on the local machine
