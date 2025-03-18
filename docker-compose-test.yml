@@ -1,0 +1,34 @@
+# Specify the version of the Docker Compose file format
+version: '3.9'
+
+services:
+  app:
+    image: kobukuro/url-shortener-drf_app:latest
+    # Specify the command to run within the container
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    # Map the host port 8000 to the container port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=devsecretkey
+      - DEBUG=1
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+    # Ensure that the 'app' container is started after the 'db' container
+    # There should be a network connection set up the app and the db container
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=devdb
+      - POSTGRES_USER=devuser
+      - POSTGRES_PASSWORD=changeme
