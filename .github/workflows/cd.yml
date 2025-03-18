@@ -23,10 +23,6 @@ jobs:
       run: |
         docker compose -f docker-compose.yml build app
 
-    - name: Tag Docker image
-      run: |
-        docker tag url-shortener-drf_app kobukuro/url-shortener-drf_app:latest
-
     - name: Push Docker image
       run: |
         docker push kobukuro/url-shortener-drf_app:latest
