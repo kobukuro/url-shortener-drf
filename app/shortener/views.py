@@ -8,9 +8,14 @@ from .models import ShortURL
 from .serializers import ShortURLSerializer, CreateShortURLSerializer
 from django.shortcuts import redirect
 from django.utils import timezone
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class CreateShortURLView(APIView):
+    """
+        Create a short URL from a long URL
+    """
     throttle_classes = [AnonRateThrottle]
 
     def generate_short_code(self):
@@ -20,7 +25,53 @@ class CreateShortURLView(APIView):
             if not ShortURL.objects.filter(short_code=code).exists():
                 return code
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['original_url'],
+            properties={
+                'original_url': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='The original URL to be shortened',
+                    example='https://www.youtube.com/'
+                )
+            }
+        ),
+        responses={
+            201: openapi.Response(
+                description="Successfully created short URL",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'short_url': openapi.Schema(type=openapi.TYPE_STRING),
+                        'expiration_date': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
+                        'success': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=True),
+                        'reason': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        nullable=True,
+                        default=None,
+                        example=None,
+                        description='Always null when successful'
+                    )
+                    }
+                )
+            ),
+            400: openapi.Response(
+                description="Invalid input",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'success': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=False),
+                        'reason': openapi.Schema(type=openapi.TYPE_STRING, example="Invalid URL format")
+                    }
+                )
+            )
+        }
+    )
     def post(self, request):
+        """
+            Create a short URL
+        """
         create_serializer = CreateShortURLSerializer(data=request.data)
 
         if not create_serializer.is_valid():
