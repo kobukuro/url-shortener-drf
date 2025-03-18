@@ -12,9 +12,6 @@ services:
     # Map the host port 8000 to the container port 8000
     ports:
       - "8000:8000"
-    # Mount the host directory './app' to the container directory '/app'
-    volumes:
-      - ./app:/app
     environment:
       - SECRET_KEY=devsecretkey
       - DEBUG=1
