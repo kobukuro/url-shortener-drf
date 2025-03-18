@@ -6,6 +6,8 @@ import random
 import string
 from .models import ShortURL
 from .serializers import ShortURLSerializer, CreateShortURLSerializer
+from django.shortcuts import redirect
+from django.utils import timezone
 
 
 class CreateShortURLView(APIView):
@@ -36,3 +38,23 @@ class CreateShortURLView(APIView):
 
         serializer = ShortURLSerializer(short_url, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class RedirectShortURLView(APIView):
+    def get(self, request, short_code):
+        try:
+            short_url = ShortURL.objects.get(short_code=short_code)
+
+            if short_url.expiration_date < timezone.now():
+                return Response({
+                    'success': False,
+                    'reason': 'URL has expired'
+                }, status=status.HTTP_410_GONE)
+
+            return redirect(short_url.original_url)
+
+        except ShortURL.DoesNotExist:
+            return Response({
+                'success': False,
+                'reason': 'Invalid short URL'
+            }, status=status.HTTP_404_NOT_FOUND)
