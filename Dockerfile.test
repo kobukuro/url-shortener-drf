@@ -3,7 +3,7 @@ LABEL maintainer="sanpeter992000@gmail.com"
 # Ensures Python output is sent straight to the terminal (without buffering),
 # allowing real-time logging and easier debugging.
 ENV PYTHONUNBUFFERED 1
-COPY ./requirements.txt /requirements.txt
+COPY ./requirements.test.txt /requirements.test.txt
 COPY ./app /app
 # Sets the working directory inside the container to /app.
 # All subsequent commands will be run from this directory.
