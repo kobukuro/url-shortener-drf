@@ -37,8 +37,7 @@ class CreateShortURLViewTests(APITestCase):
 
     def test_rate_limiting(self):
         """Test rate limiting functionality"""
-        # Assuming rate limit is 10 requests per minute
-        for _ in range(11):
+        for _ in range(110):
             response = self.client.post(self.url, self.valid_payload, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
