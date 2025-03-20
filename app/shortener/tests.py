@@ -7,6 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.core.cache import cache
 
+
 class CreateShortURLViewTests(APITestCase):
     def setUp(self):
         """Set up test data for URL shortening tests"""
@@ -35,6 +36,14 @@ class CreateShortURLViewTests(APITestCase):
     def test_create_invalid_short_url(self):
         """Test creating an invalid short URL"""
         response = self.client.post(self.url, self.invalid_payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(response.data['success'])
+        self.assertTrue('reason' in response.data)
+
+    def test_empty_payload(self):
+        """Test creating a short URL with an empty payload"""
+        response = self.client.post(self.url, {}, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(response.data['success'])
