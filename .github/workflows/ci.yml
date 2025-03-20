@@ -27,10 +27,13 @@ jobs:
         ports:
           - 6379:6379
         options: >-
-          --health-cmd "redis-cli ping"
+          --health-cmd "redis-cli -a your_redis_password ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        env:
+          REDIS_PASSWORD: your_redis_password
+        command: ["redis-server", "--requirepass", "your_redis_password"]
 
     steps:
     - uses: actions/checkout@v3
@@ -56,8 +59,8 @@ jobs:
         DB_PASS: changeme
         REDIS_HOST: localhost
         REDIS_PORT: 6379
+        REDIS_PASSWORD: your_redis_password
         PYTHONPATH: ${{ github.workspace }}/app
       run: |
         cd app
         python -m pytest
-

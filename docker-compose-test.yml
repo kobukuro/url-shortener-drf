@@ -21,6 +21,7 @@ services:
       - DB_PASS=changeme
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=your_redis_password
     # Ensure that the 'app' container is started after the 'db' container
     # There should be a network connection set up the app and the db container
     depends_on:
@@ -39,3 +40,4 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+    command: redis-server --requirepass your_redis_password
