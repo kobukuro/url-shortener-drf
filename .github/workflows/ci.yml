@@ -7,34 +7,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: devdb
-          POSTGRES_USER: devuser
-          POSTGRES_PASSWORD: changeme
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      redis:
-        image: redis:alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli -a your_redis_password ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          --requirepass "your_redis_password"
-        env:
-          REDIS_PASSWORD: your_redis_password
-
     steps:
     - uses: actions/checkout@v3
 
@@ -42,6 +14,10 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'
+
+    - name: Start services with docker-compose
+      run: |
+        docker compose -f docker-compose.yml up -d db redis
 
     - name: Install dependencies
       run: |
